@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+
+<html>
+    <head>
+        <title>{{ post_id }}</title>
+    </head>
+    <body>
+        <h1>{{ post_id }}</h1>
+        {% for item in articles %}
+            <div class="article">
+                <div class="article-title"> {{ item.title }}</div>
+                <pre class="article-body"> {{ item.content }}</pre>
+                <pre><small> <a href="/blog">Home</a> </small></pre>
+            </div>
+        {% endfor %}
+        <button><a href="/submission">Submit</a></button>
+    </body>
+</html>

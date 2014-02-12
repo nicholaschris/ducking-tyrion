@@ -1,0 +1,21 @@
+application: cs253buildablog
+version: 5
+runtime: python27
+api_version: 1
+threadsafe: true
+
+handlers:
+- url: /blog/(\d+)
+  script: main.app
+
+- url: /stylesheets
+  static_dir: stylesheets
+
+- url: /.*
+  script: main.app
+
+libraries:                                                                      
+- name: jinja2                                                                  
+  version: latest                                                               
+- name: markupsafe                                                              
+  version: latest

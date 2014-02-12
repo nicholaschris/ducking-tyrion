@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+
+<html>
+    <head>
+        <title>/articles/</title>
+    </head>
+    <body>
+        <h1>/articles/</h1>
+        {% for item in articles %}
+            <div class="article">
+                <div class="article-title"> {{ item.title }}</div>
+                <pre class="article-body"> {{ item.content }}</pre>
+                {{ item.id }}
+                <!-- <pre><small> <a href="/blog/{{ item.id }}">Permalink</a> </small></pre> -->
+            </div>
+        {% endfor %}
+        <button><a href="/blog/newpost">Submit</a></button>
+    </body>
+</html>
