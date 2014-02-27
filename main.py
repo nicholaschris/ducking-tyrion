@@ -306,14 +306,14 @@ class TestPage(Handler):
 
 app = webapp2.WSGIApplication(
     [('/', Home),
-     ('/blog/welcome', WelcomeHandler),
-     ('/blog/signup', SignupPage),
-     ('/blog/login', LoginHandler),
-     ('/blog/logout', LogoutHandler),
-     ('/blog', Blog),
-     ('/blog/newpost', NewPost),
-     ('/blog/(\d+)', Permalink),
-     ('/test', TestPage),
+     ('/blog/welcome/?', WelcomeHandler),
+     ('/blog/signup/?', SignupPage),
+     ('/blog/login/?', LoginHandler),
+     ('/blog/logout/?', LogoutHandler),
+     ('/blog/?', Blog),
+     ('/blog/newpost/?', NewPost),
+     ('/blog/(\d+)/?', Permalink),
+     ('/test/?', TestPage),
      ('/blog/.json', BlogJSON),
      ('/blog/(\d+).json', PermalinkJSON)],
       debug=True)
