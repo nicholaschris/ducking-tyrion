@@ -3,12 +3,23 @@ import webapp2  # for web handlers
 import jinja2   # for templates
 import logging
 import random
+import string
+import re
+import json
 
 from google.appengine.ext import db # for database
 from google.appengine.api import users # to enable users
 
 '''
-Main file for blog platform.
+Main file for blog publishing platform.
+
+signup_url = url + "/signup"
+login_url = url + "/login"
+logout_url = url + "/logout"
+post_url = url + "/newpost"
+json_url = url + "/.json"
+permalink_json_url = permalink_url + ".json
+
 '''
 
 SECRET = "imsosecret"
@@ -16,10 +27,7 @@ SECRET = "imsosecret"
 template_dir = os.path.join(os.path.dirname(__file__), 'templates')
 jinja_env = jinja2.Environment(loader = jinja2.FileSystemLoader(template_dir), autoescape=True)
 
-### Checling the form is entered correctly ###
-import string
-import re
-
+### Checking the form is entered correctly ###
 USER_RE = re.compile(r"^[a-zA-Z0-9_-]{3,20}$")
 PASS_RE = re.compile(r"^.{3,20}$")
 MAIL_RE = re.compile(r"^[\S]+@[\S]+\.[\S]+$")
@@ -67,14 +75,17 @@ def make_pw_hash(name, pw, salt=None):
     if not salt:
         salt=make_salt()
     h = hashlib.sha256(name + pw + salt).hexdigest()
-    return '%s,%s' % (h, salt)
+    return '%s|%s' % (h, salt)
 
 def valid_pw(name, pw, h):
-    salt = h.split(',')[1]
+    print "h is: ", h
+    salt = h.split('|')[1]
+    print "salt is: ", salt
     return h == make_pw_hash(name, pw, salt)
 
 ### End ###
 
+### Database models ###
 class BlogPost(db.Model):
     """Models an individual blog post."""
     title = db.StringProperty(required = True)
@@ -88,6 +99,9 @@ class User(db.Model):
     ip_address = db.StringProperty(required=True)
     email_address = db.StringProperty()
 
+### END ###
+
+### Handlers ###
 class Handler(webapp2.RequestHandler):
     '''
     Make some helper classes.
@@ -99,6 +113,16 @@ class Handler(webapp2.RequestHandler):
         return t.render(params)
     def render(self, template, **kw):
         self.write(self.render_str(template, **kw))
+        ### Function to render json ###
+    def render_json(self, d):
+        json_txt = json.dumps(d)
+        print d
+        print json_txt
+        self.response.headers['Content-Type'] = 'application/json; charset=UTF-8'
+        self.response.out.write(json_txt)
+
+### END ###
+
 
 class Home(Handler):
 
@@ -124,15 +148,40 @@ class Blog(Handler):
 
     def get(self):
         posts = db.GqlQuery("SELECT * FROM BlogPost ORDER BY created DESC")
+        posts = list(posts)
         self.render('front_page.html', articles = posts)
 
 # Permalink page for rendering a single blog post
 class Permalink(Handler):
+
     def get(self, post_id):
         post = BlogPost.get_by_id(int(post_id))
         self.render('post.html', articles = [post], post_id = post_id)
 
+class PermalinkJSON(Handler):
+
+    def get(self, post_id):
+        p = BlogPost.get_by_id(int(post_id))
+        time_fmt = '%c'
+        d = {'title': p.title,'content': p.content,'created': p.created.strftime(time_fmt)}
+        self.render_json(d)
+
+class BlogJSON(Handler):
+
+    def get(self):
+        posts = db.GqlQuery("SELECT * FROM BlogPost ORDER BY created DESC")
+        # posts = list(posts)
+        print posts
+        blog_json = []
+        for p in posts:
+            time_fmt = '%c'
+            d = {'title': p.title,'content': p.content,'created': p.created.strftime(time_fmt)}
+            blog_json.append(d)
+            print d
+        self.render_json(blog_json)
+
 class NewPost(Handler):
+
     def get(self):
         self.render('submit_form.html')
 
@@ -169,11 +218,6 @@ class SignupPage(Handler):
         password = self.request.get('password')
         verify = self.request.get('verify')
         email = self.request.get('email')
-        
-        # username = valid_username(user_username)
-        # password = valid_password(user_password)
-        # verify = valid_verify(user_password, user_verify)
-        # email = valid_email(user_email)
 
         params = dict(username = username,
                             email = email)
@@ -196,13 +240,50 @@ class SignupPage(Handler):
             print "ERROR", params
             self.render('signup_form.html', **params)
         else:
-            hashed_password = make_pw_hash(SECRET, password)
+            hashed_password = make_pw_hash(username, password)
             print hashed_password
             ip_address = self.request.remote_addr
             account=User(name=username,password=hashed_password, ip_address=ip_address, email_address=email)
             account.put()
             self.response.headers.add_header('Set-Cookie','user_id=%s; Path=/'%str(username))
             self.redirect('/blog/welcome')
+
+class LoginHandler(Handler):
+
+    def get(self):
+        # user = self.request.cookies.get('user_id')
+        self.render('login.html')
+
+    def post(self):
+        username = self.request.get('username')
+        password = self.request.get('password')
+
+        query = db.GqlQuery('SELECT * FROM User WHERE name = :username', username=username)
+        username_result = query.get()
+
+        params = {}
+        if username_result:
+            pw = username_result.password
+            b = valid_pw(username_result.name,password,pw)
+            print username_result.name,password,pw
+            if b:
+                self.response.headers.add_header('Set-Cookie','user_id=%s; Path=/'%str(username))
+                self.redirect('/blog/welcome')
+            else:
+                params['invalid_login'] = "This is an invalid login (pw)."
+                self.render('login.html', **params)
+                print "ERROR", pw
+        else:
+            params['invalid_login'] = "This is an invalid login."
+            self.render('login.html', **params)
+            print "ERROR", username
+
+class LogoutHandler(Handler):
+
+    def get(self):
+        empty_string = ""
+        self.response.headers.add_header('Set-Cookie', 'user_id=%s; Path=/' % empty_string)
+        self.redirect('/blog/signup')
 
 class TestPage(Handler):
 
@@ -220,14 +301,19 @@ class TestPage(Handler):
         self.response.headers.add_header('Set-Cookie', 'visits=%s; Path=/' % new_cookie_val)
         self.write("You've been here %s times!" % visits)
 
+### END HANDLERS ###
 
 
 app = webapp2.WSGIApplication(
     [('/', Home),
      ('/blog/welcome', WelcomeHandler),
      ('/blog/signup', SignupPage),
+     ('/blog/login', LoginHandler),
+     ('/blog/logout', LogoutHandler),
      ('/blog', Blog),
      ('/blog/newpost', NewPost),
      ('/blog/(\d+)', Permalink),
-     ('/test', TestPage)],
+     ('/test', TestPage),
+     ('/blog/.json', BlogJSON),
+     ('/blog/(\d+).json', PermalinkJSON)],
       debug=True)
