@@ -6,9 +6,11 @@ import random
 import string
 import re
 import json
+import time
 
 from google.appengine.ext import db # for database
 from google.appengine.api import users # to enable users
+from google.appengine.api import memcache #import memcache to lower hits on database
 
 '''
 Main file for blog publishing platform.
@@ -26,6 +28,21 @@ SECRET = "imsosecret"
 
 template_dir = os.path.join(os.path.dirname(__file__), 'templates')
 jinja_env = jinja2.Environment(loader = jinja2.FileSystemLoader(template_dir), autoescape=True)
+
+### memcache fuction ###
+
+def top_blog(update = False):
+    logging.error(update)
+    key = 'top'
+    posts = memcache.get(key)
+    logging.error(posts)
+    if posts is None or update:
+        logging.error("DB QUERY")
+        posts = db.GqlQuery("SELECT * FROM BlogPost ORDER BY created DESC LIMIT 10")
+        posts = list(posts)
+        memcache.set(key, posts)
+        memcache.set('top_posts_qt', time.time())
+    return posts 
 
 ### Checking the form is entered correctly ###
 USER_RE = re.compile(r"^[a-zA-Z0-9_-]{3,20}$")
@@ -147,9 +164,12 @@ class WelcomeHandler(Handler):
 class Blog(Handler):
 
     def get(self):
-        posts = db.GqlQuery("SELECT * FROM BlogPost ORDER BY created DESC")
-        posts = list(posts)
-        self.render('front_page.html', articles = posts)
+        posts = top_blog()
+        qt = memcache.get('top_posts_qt')
+        if qt:
+            qt = time.time() - qt
+        logging.error(time.time(), qt)
+        self.render('front_page.html', articles = posts, qt = qt)
 
 # Permalink page for rendering a single blog post
 class Permalink(Handler):
