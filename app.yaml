@@ -1,5 +1,5 @@
 application: cs253buildablog
-version: 9
+version: 1
 runtime: python27
 api_version: 1
 threadsafe: true
@@ -8,8 +8,8 @@ handlers:
 - url: /blog/(\d+)
   script: main.app
 
-- url: /stylesheets
-  static_dir: stylesheets
+- url: /static
+  static_dir: static
 
 - url: /.*
   script: main.app

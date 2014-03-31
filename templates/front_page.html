@@ -7,14 +7,15 @@
     <body>
         <h1>/articles/</h1>
         {% for item in articles %}
+        <p>{{ item.id|string }}</p>
             <div class="article">
                 <div class="article-title"> {{ item.title }}</div>
                 <pre class="article-body"> {{ item.content }}</pre>
                 {{ item.id }}
-                <!-- <pre><small> <a href="/blog/{{ item.id }}">Permalink</a> </small></pre> -->
+                <pre><small> <a href="/blog/{{ item.id }}">Permalink</a> </small></pre>
             </div>
         {% endfor %}
         <button><a href="/blog/newpost">Submit</a></button>
-        <p> {{ qt }}</p>
+        <p> Queried {{ qt }} seconds ago </p>
     </body>
 </html>

@@ -21,6 +21,7 @@ logout_url = url + "/logout"
 post_url = url + "/newpost"
 json_url = url + "/.json"
 permalink_json_url = permalink_url + ".json
+Cache the front page and permalink page
 
 '''
 
@@ -29,7 +30,7 @@ SECRET = "imsosecret"
 template_dir = os.path.join(os.path.dirname(__file__), 'templates')
 jinja_env = jinja2.Environment(loader = jinja2.FileSystemLoader(template_dir), autoescape=True)
 
-### memcache fuction ###
+### memcache function ###
 
 def top_blog(update = False):
     logging.error(update)
@@ -43,6 +44,8 @@ def top_blog(update = False):
         memcache.set(key, posts)
         memcache.set('top_posts_qt', time.time())
     return posts 
+
+
 
 ### Checking the form is entered correctly ###
 USER_RE = re.compile(r"^[a-zA-Z0-9_-]{3,20}$")
@@ -172,11 +175,58 @@ class Blog(Handler):
         self.render('front_page.html', articles = posts, qt = qt)
 
 # Permalink page for rendering a single blog post
+def post_cache(blog_id, update= False):
+    permacache = blog_id   #cache key based on blog_id
+    posts = memcache.get(permacache)
+    logging.error(posts)
+    pkey=permacache
+    post_time_key ='plkey'
+    times = memcache.get(post_time_key)
+    if posts is None or update==True:
+       logging.error("DB QUERY")
+       posts = BlogPost.get_by_id(int(blog_id))
+       # posts = list(posts) #can't put in list coz its not iterable for 1 item
+       memcache.set(pkey, posts)
+       memcache.set(str(post_time_key), (time.time()))
+    age = time.time() - memcache.get(post_time_key)
+    timecache ="%f" % age
+    return posts, timecache
+
+def permalink_cache(post_id, update=False):
+    post_id = post_id
+    # post = memcache.get(post_id)
+    # key = 'post'
+    # times = memcache.get(key)
+    # post = BlogPost.get_by_id(int(post_id))
+    # post = memcache.get(key)
+    # logging.error(post)
+    # if post is None or update:
+    #     logging.error("DB QUERY")
+    #     post = BlogPost.get_by_id(int(post_id))
+    #     memcache.set(key, post)
+    #     memcache.set('post_qt', time.time())
+    # age = time.time() - memcache.get(key)
+    # timecache ="%f" % age
+    # return post
+
 class Permalink(Handler):
+    def get(self, blog_id):
+        posts, timecache= post_cache(blog_id)
+        timecache = "Queried " + timecache.split('.')[0] +" seconds ago"
+        if not posts:
+           self.render("404.html")
+        self.render("post.html", articles=[posts], age=timecache)
+
+class Permalink_old(Handler):
 
     def get(self, post_id):
-        post = BlogPost.get_by_id(int(post_id))
-        self.render('post.html', articles = [post], post_id = post_id)
+        # post = BlogPost.get_by_id(int(post_id))
+        post = permalink_cache(post_id)
+        qt_post = memcache.get('posts_qt')
+        if qt_post:
+            qt_post = time.time() - qt_post
+        logging.error(time.time(), qt_post)
+        self.render('post.html', articles = [post], post_id = post_id, qt = qt_post)
 
 class PermalinkJSON(Handler):
 
@@ -321,6 +371,14 @@ class TestPage(Handler):
         self.response.headers.add_header('Set-Cookie', 'visits=%s; Path=/' % new_cookie_val)
         self.write("You've been here %s times!" % visits)
 
+### flush the cache ###
+class RemoveCache(Handler):
+
+    def get(self):
+        logging.error("HELLO")
+        memcache.flush_all()
+        self.redirect("/blog")
+
 ### END HANDLERS ###
 
 
@@ -335,5 +393,6 @@ app = webapp2.WSGIApplication(
      ('/blog/(\d+)/?', Permalink),
      ('/test/?', TestPage),
      ('/blog/.json', BlogJSON),
-     ('/blog/(\d+).json', PermalinkJSON)],
+     ('/blog/(\d+).json', PermalinkJSON),
+     ('/blog/flush/?', RemoveCache)],
       debug=True)
