@@ -3,7 +3,7 @@
 {% block content %}
 
   {% for item in articles %}
-    <p>{{ item.key().id()|string }}</p>
+    <p>{{ item.key().id()|string }} | {{ item.created }}</p>
     <div class="article">
     <div class="article-title"> {{ item.title }}</div>
         <pre class="article-body"> {{ item.content }}</pre>
