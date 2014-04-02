@@ -1,4 +1,18 @@
-<!DOCTYPE html>
+{% extends "base.html" %}
+{% block title %} | Login {% endblock %}
+{% block content %}
+
+<h2>Login Here:</h2>
+<form method="post">
+  <p>{{ invalid_login }}</p>
+  <br>
+  <input type="text" name="username" value="{{username}}">username<br>
+  <input type="password" name="password" value="{{password}}">password<br>
+  <input type="submit">
+</form>
+
+{% endblock %}
+<!-- <!DOCTYPE html>
 
 <html>
   <head>
@@ -16,4 +30,4 @@
     </form>
   </body>
 
-</html>
+</html> -->

@@ -1,3 +1,20 @@
+{% extends "base.html" %}
+{% block title %} | {{ Signup }} {% endblock %}
+{% block content %}
+
+<h2>Enter the signup form:</h2>
+<form method="post">
+  <p>{{ value }}</p>
+  <br>
+  <input type="text" name="username" value="{{username}}">username<br>
+  <input type="password" name="password" value="{{password}}">password<br>
+  <input type="password" name="verify" value="{{verify}}">verify<br>
+  <input type="text" name="email" value="{{email}}">email<br>
+  <input type="submit">
+</form>
+
+{% endblock %}
+<!-- 
 <!DOCTYPE html>
 
 <html>
@@ -18,4 +35,4 @@
     </form>
   </body>
 
-</html>
+</html> -->

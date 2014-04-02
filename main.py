@@ -36,12 +36,14 @@ def top_blog(update = False):
     logging.error(update)
     key = 'top'
     posts = memcache.get(key)
-    logging.error(posts)
+    logging.error(posts) #posts is an empty 
     if posts is None or update:
         logging.error("DB QUERY")
         posts = db.GqlQuery("SELECT * FROM BlogPost ORDER BY created DESC LIMIT 10")
         posts = list(posts)
         memcache.set(key, posts)
+        logging.error("Set key and posts")
+        # logging.error((key, posts))
         memcache.set('top_posts_qt', time.time())
     return posts 
 
@@ -112,6 +114,18 @@ class BlogPost(db.Model):
     content = db.TextProperty(required = True)
     created = db.DateTimeProperty(auto_now_add = True)
 
+    def render(self):
+        self._render_text = self.content.replace('\n', '<br>')
+        return render_str("post.html", p = self)
+
+    def as_dict(self):
+        time_fmt = '%c'
+        d = {'title': self.title,
+             'content': self.content,
+             'created': self.created.strftime(time_fmt),
+             'last_modified': self.last_modified.strftime(time_fmt)}
+        return d
+
 class User(db.Model):
     """Models an individual user."""
     name = db.StringProperty(required=True)
@@ -160,7 +174,7 @@ class WelcomeHandler(Handler):
         cookie = self.request.cookies.get('user_id')
         print "Welcome", cookie
         if cookie:
-            self.write("Welcome," +cookie+"!")
+            self.write("Welcome," +cookie+"!"+" <a href='/blog'>Continue</a>")
         else:
             self.render('front.html')
 
@@ -168,22 +182,25 @@ class Blog(Handler):
 
     def get(self):
         posts = top_blog()
+        logging.error('Blog')
+        logging.error(posts)
         qt = memcache.get('top_posts_qt')
+        logging.error(qt)
         if qt:
             qt = time.time() - qt
-        logging.error(time.time(), qt)
+        logging.error((time.time(), qt))
         self.render('front_page.html', articles = posts, qt = qt)
 
 # Permalink page for rendering a single blog post
 def post_cache(blog_id, update= False):
     permacache = blog_id   #cache key based on blog_id
     posts = memcache.get(permacache)
-    logging.error(posts)
+    logging.error('post_cache: ', posts)
     pkey=permacache
     post_time_key ='plkey'
     times = memcache.get(post_time_key)
     if posts is None or update==True:
-       logging.error("DB QUERY")
+       logging.error("post_cache: DB QUERY")
        posts = BlogPost.get_by_id(int(blog_id))
        # posts = list(posts) #can't put in list coz its not iterable for 1 item
        memcache.set(pkey, posts)
@@ -244,6 +261,7 @@ class BlogJSON(Handler):
         print posts
         blog_json = []
         for p in posts:
+            print key.id()
             time_fmt = '%c'
             d = {'title': p.title,'content': p.content,'created': p.created.strftime(time_fmt)}
             blog_json.append(d)
@@ -262,6 +280,9 @@ class NewPost(Handler):
         if title and content:
             post = BlogPost(title = title, content = content)
             key = post.put()
+            time.sleep(0.5)
+            update = top_blog(update=True)
+            logging.error('Posting')
             self.redirect("/blog/%d" % key.id())
         else:
             error = "Oops. It seems as though there is an error. We need both a title and some content!" 

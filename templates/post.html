@@ -1,4 +1,19 @@
-<!DOCTYPE html>
+{% extends "base.html" %}
+{% block title %} | {{ articles[0].title }} {% endblock %}
+{% block content %}
+
+<h1>{{ post_id }}</h1>
+{% for item in articles %}
+<div class="article">
+    <div class="article-title"> {{ item.title }}</div>
+    <pre class="article-body"> {{ item.content }}</pre>
+    <pre><small> <a href="/blog">Home</a> </small></pre>
+</div>
+{% endfor %}
+<p>{{ age }}</p>
+
+{% endblock %}
+<!-- <!DOCTYPE html>
 
 <html>
     <head>
@@ -15,4 +30,4 @@
         {% endfor %}
         <p>{{ age }}</p>
     </body>
-</html>
+</html> -->
