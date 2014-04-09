@@ -76,16 +76,16 @@ import hashlib
 import hmac
 
 def hash_str(s):
-        # return hashlib.md5(s).hexdigest()
-        return hmac.new(SECRET, s).hexdigest()
+    # return hashlib.md5(s).hexdigest()
+    return hmac.new(SECRET, s).hexdigest()
 
 def make_secure_val(s):
-        return "%s|%s" % (s, hash_str(s))
+    return "%s|%s" % (s, hash_str(s))
 
 def check_secure_val(h):
-        val = h.split('|')[0]
-        if h == make_secure_val(val):
-                return val
+    val = h.split('|')[0]
+    if h == make_secure_val(val):
+        return val
 
 ### End ###
 
@@ -132,7 +132,44 @@ class User(db.Model):
     password = db.StringProperty(required=True)
     ip_address = db.StringProperty(required=True)
     email_address = db.StringProperty()
+    
+    #Stuff below added from hw5
+    @classmethod
+    def by_id(cls, uid):
+        return User.get_by_id(uid, parent = users_key())
 
+    @classmethod
+    def by_name(cls, name):
+        u = User.all().filter('name =', name).get()
+        return u
+
+    @classmethod
+    def register(cls, name, pw, email = None):
+        pw_hash = make_pw_hash(name, pw)
+        return User(parent = users_key(),
+                    name = name,
+                    pw_hash = pw_hash,
+                    email = email)
+
+    @classmethod
+    def login(cls, name, pw):
+        u = cls.by_name(name)
+        if u and valid_pw(name, pw, u.pw_hash):
+            return u
+
+class AllPost(db.Model):
+
+    name = db.StringProperty(required=True)
+    title = db.StringProperty(required=True)
+    content = db.TextProperty(required=True)
+    location = db.StringProperty(required=True)
+    # province = db.StringProperty(required=True)
+    # municipality = db.StringProperty(required=True)
+    ip_address = db.StringProperty(required=True)
+    email_address = db.StringProperty(required=True)
+    phone_number = db.StringProperty(required=True) # Should be number?
+    votes = db.IntegerProperty(required=True)
+    created = db.DateTimeProperty(auto_now_add = True)
 ### END ###
 
 ### Handlers ###
@@ -143,6 +180,7 @@ class Handler(webapp2.RequestHandler):
     def write(self, *a, **kw):
         self.response.out.write(*a, **kw)
     def render_str(self, template, **params):
+        params['user'] = self.user # added from hw5
         t = jinja_env.get_template(template)
         return t.render(params)
     def render(self, template, **kw):
@@ -154,7 +192,33 @@ class Handler(webapp2.RequestHandler):
         print json_txt
         self.response.headers['Content-Type'] = 'application/json; charset=UTF-8'
         self.response.out.write(json_txt)
+    
+    # Stuff below was added from hw5
+    def set_secure_cookie(self, name, val):
+        cookie_val = make_secure_val(val)
+        self.response.headers.add_header(
+            'Set-Cookie',
+            '%s=%s; Path=/' % (name, cookie_val))
 
+    def read_secure_cookie(self, name):
+        cookie_val = self.request.cookies.get(name)
+        return cookie_val and check_secure_val(cookie_val)
+
+    def login(self, user):
+        self.set_secure_cookie('user_id', str(user.key().id()))
+
+    def logout(self):
+        self.response.headers.add_header('Set-Cookie', 'user_id=; Path=/')
+
+    def initialize(self, *a, **kw):
+        webapp2.RequestHandler.initialize(self, *a, **kw)
+        uid = self.read_secure_cookie('user_id')
+        self.user = uid and User.by_id(int(uid))
+
+        if self.request.url.endswith('.json'):
+            self.format = 'json'
+        else:
+            self.format = 'html'
 ### END ###
 
 
@@ -181,6 +245,7 @@ class WelcomeHandler(Handler):
 class Blog(Handler):
 
     def get(self):
+        cookie = self.request.cookies.get('user_id')
         posts = top_blog()
         logging.error('Blog')
         logging.error(posts)
@@ -189,7 +254,7 @@ class Blog(Handler):
         if qt:
             qt = time.time() - qt
         logging.error((time.time(), qt))
-        self.render('front_page.html', articles = posts, qt = qt)
+        self.render('front_page.html', articles = posts, qt = qt, cookie=cookie)
 
 # Permalink page for rendering a single blog post
 def post_cache(blog_id, update= False):
@@ -310,6 +375,14 @@ class SignupPage(Handler):
         verify = self.request.get('verify')
         email = self.request.get('email')
 
+        query = db.GqlQuery('SELECT * FROM User WHERE name = :username', username=username)
+        username_result = query.get()
+        # print "_______HELLO___________"
+        if username_result:
+            logging.error((username_result.name, username))
+
+        
+
         params = dict(username = username,
                             email = email)
         if not valid_username(username):
@@ -325,6 +398,13 @@ class SignupPage(Handler):
             if not valid_email(email):
                 params['error_username'] = "That's not a valid email."
                 have_error = True
+
+        if username_result:
+            if username_result.name == username:
+                params['error_username'] = "That username has been taken."
+                print "ERROR", params
+                have_error = True
+                # self.render('signup_form.html', **params)
 
         if have_error:
             # self.write_form("Invalid", user_username, user_password, user_verify, user_email)
@@ -359,6 +439,7 @@ class LoginHandler(Handler):
             print username_result.name,password,pw
             if b:
                 self.response.headers.add_header('Set-Cookie','user_id=%s; Path=/'%str(username))
+                logging.error("Set Cookie")
                 self.redirect('/blog/welcome')
             else:
                 params['invalid_login'] = "This is an invalid login (pw)."
@@ -400,6 +481,94 @@ class RemoveCache(Handler):
         memcache.flush_all()
         self.redirect("/blog")
 
+class AllSubmit(Handler):
+
+    def get(self):
+        self.render('allsubmit.html')
+
+    def post(self):
+        name = self.request.get('name')
+        title = self.request.get('title')
+        content = self.request.get('content')
+        # province = self.request.get('province')
+        # municipality = self.request.get('municipality')
+        location = self.request.get('location')
+        ip_address = self.request.remote_addr
+        email_address = "test@test.com"
+        phone_number = self.request.get('contact_number')
+
+        curr_post = AllPost(name = name,
+                             title = title,
+                             location = location,
+                             content = content,
+                             # profession = profession,
+                             # province = province,
+                             # municipality = municipality.
+                             ip_address = ip_address,
+                             email_address = email_address,
+                             phone_number = phone_number,
+                             votes = 0)
+        curr_post.put()
+        time.sleep(0.5)
+        update = recent_posts(update=True)
+        self.redirect('/thanks')
+
+class Thanks(Handler):
+    def get(self):
+        self.render('thanks.html')
+
+def recent_posts(update = False):
+    logging.error("RECENT_POSTS CALLED")
+    key = 'recent'
+    posts = memcache.get(key)
+    if posts is None or update:
+        logging.error("DB QUERY")
+        posts = db.GqlQuery("SELECT * FROM AllPost ORDER BY created DESC LIMIT 10")
+        posts = list(posts)
+        memcache.set(key, posts)
+        memcache.set('recent_posts_qt', time.time())
+    return posts
+
+
+class Latest(Handler):
+
+    def get(self):
+        cookie = ""
+        # cookie = self.request.cookies.get('user_id')
+        posts = recent_posts() #
+        qt = memcache.get('recent_posts_qt')
+        if qt:
+            qt = time.time() - qt
+        self.render('latest.html', articles = posts, qt = qt, cookie=cookie)
+
+    def post(self):
+        post_id = int(self.request.get("id"))
+        q = AllPost.get_by_id(post_id)
+        q.votes += 1
+        q.put()
+        time.sleep(0.5)
+        update = recent_posts(update=True)
+        posts = db.GqlQuery("SELECT * FROM AllPost ORDER BY created DESC LIMIT 10")
+        posts = list(posts)
+        self.render('latest.html', articles=posts)
+        # self.redirect('/latest')
+
+class Filter(Handler):
+
+    def get(self):
+        self.render('filter_form.html')
+
+    def post(self):
+        t = self.request.get('title')
+        l = self.request.get('location')
+        q = db.GqlQuery("SELECT * FROM AllPost WHERE location = :1 AND title = :2", l ,t)
+        logging.error("Hit THE DATASTORE!!!")
+
+
+        # q.all().filter('location = ', l).filter('title = ', t)
+        posts = list(q)
+        self.render('latest.html', articles=posts, filtered=(t,l))
+
 ### END HANDLERS ###
 
 
@@ -415,5 +584,9 @@ app = webapp2.WSGIApplication(
      ('/test/?', TestPage),
      ('/blog/.json', BlogJSON),
      ('/blog/(\d+).json', PermalinkJSON),
-     ('/blog/flush/?', RemoveCache)],
+     ('/blog/flush/?', RemoveCache),
+     ('/submit/?', AllSubmit),
+     ('/thanks/?', Thanks),
+     ('/latest/?', Latest),
+     ('/filter/?', Filter)],
       debug=True)

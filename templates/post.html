@@ -2,11 +2,12 @@
 {% block title %} | {{ articles[0].title }} {% endblock %}
 {% block content %}
 
-<h1>{{ post_id }}</h1>
+<!-- <h1>{{ post_id }}</h1> -->
 {% for item in articles %}
 <div class="article">
     <div class="article-title"> {{ item.title }}</div>
     <pre class="article-body"> {{ item.content }}</pre>
+    <p>{{ item.key().id()|string }} | {{ item.created }}</p>
     <pre><small> <a href="/blog">Home</a> </small></pre>
 </div>
 {% endfor %}

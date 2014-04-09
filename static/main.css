@@ -117,4 +117,28 @@ input[type=submit] {
     color: gray;
     font-size: 12px;
 }
+#signup-form input {
+    width: 200px;
+    line-height: 20px;
+    font-size: 20px;
+    padding: 1px;
+}
+#signup-form input[type=submit] {
+    /*background-color: red;*/
+    width:100px;
+    margin-top: 10px;
+    padding: 2px 6px 3px;
+}
 
+#login-form input {
+    width: 200px;
+    line-height: 20px;
+    font-size: 20px;
+    padding: 1px;
+}
+#login-form input[type=submit] {
+    /*background-color: red;*/
+    width:100px;
+    margin-top: 10px;
+    padding: 2px 6px 3px;
+}

@@ -3,12 +3,12 @@
 {% block content %}
 
   {% for item in articles %}
-    <p>{{ item.key().id()|string }} | {{ item.created }}</p>
+    
     <div class="article">
     <div class="article-title"> {{ item.title }}</div>
         <pre class="article-body"> {{ item.content }}</pre>
         {{ item.id }}
-        <pre><small> <a href="/blog/{{ item.key().id() }}">Permalink</a> </small></pre>
+        <pre><small> <a href="/blog/{{ item.key().id() }}">Permalink</a> </small></pre><p>{{ item.key().id()|string }} | {{ item.created }}</p>
     </div>
     <hr />
   {% endfor %}
