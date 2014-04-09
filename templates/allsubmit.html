@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %} | {{ Submit }} {% endblock %}
+{% block content %}
+
+<h1>/Submit/</h1>
+<form method="post">
+    <label>
+        <div>Name</div> 
+        <input type="text" name="name" value={{name}} >
+    </label>
+    <label>
+        <div>Title</div> 
+        <input type="text" name="title" value={{title}} >
+    </label>
+    <label>
+        <div>Content</div> 
+        <textarea name="content"> {{content}} </textarea>
+    </label>
+    <label>
+        <div>Location</div>
+        <input type="text" name="location" value={{location}} >
+    </label>
+    <label>
+        <div>Contact Number</div>
+        <input type='text' name="contact_number" value={{contactnumber}} >
+    </label>
+    <div class="error">{{error}}</div>
+    <input type="submit">
+</form>
+{% endblock %}

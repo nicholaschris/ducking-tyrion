@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <link type="text/css" rel="stylesheet" href="/static/main.css" />
+
+  <title>Abacus Finch {% block title %}{% endblock %}</title>
+</head>
+
+<body>
+  <a href="/blog" class="main-title">
+    Abacus Finch
+  </a>
+
+  <div class="login-area">
+    {% if cookie %} <!-- if user -->
+      {{ cookie }} (<a class="login-link" href="blog/logout">logout</a>)
+      <!-- {{user.name}} (<a class="login-link" href="/logout">logout</a>) -->
+    {% else %}
+      <a class="login-link" href="/blog/login">login</a>
+      |
+      <a class="login-link" href="/blog/signup">signup</a>
+    {% endif %}
+  </div>
+
+  <div id="content">
+  {% block content %}
+  {% endblock %}
+  </div>
+</body>
+
+</html>
+

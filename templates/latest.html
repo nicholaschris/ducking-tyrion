@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <link rel="stylesheet" type="text/css" href="static/main.css">
+        <style type="text/css">
+            article {
+                width:900px;
+                margin: 0 auto;
+            }
+            h1 {
+                font-size: 2em;
+                font-family: "Serif"
+            }
+        </style>
+    </head>
+    <body>
+        <article>
+          <h1>Latest adverts and posts posted to this page</h1>
+          <hr />
+          {% if filtered %}
+              <p>Filtered by: {{filtered[0]}}, {{filtered[1]}}</p>
+          {% endif %}
+          {% for item in articles %}
+            
+            <div class="article">
+                <div class="article-name"><h2>Name: {{item.name}}</h2></div>
+                <div class="article-title"><h2>Title: {{ item.title }}</h2></div>
+                <div class="article-content">Content: {{ item.content }}</div>
+                <div class="article-location">Location: {{ item.location}}</div>
+                <div class="article-phonenumber">Contact Number: {{item.phone_number}}</div>
+                <div class="article-votes">Votes: {{item.votes}}
+                    <form action="/latest" method="post">
+                        <input name="id" value={{item.key().id()}}>
+                        <button>Vote+</button>
+                    </form>
+                </div>
+                <!-- <div class="article-ip">{{item.ip_address}}</div> -->
+                <!-- <div class="article-created">{{item.created}}</div> -->
+                <!-- {{ item.id }} -->
+                <small><a href="/blog/{{ item.key().id() }}">Permalink</a></small>
+                <p>{{ item.key().id()|string }} | {{ item.created }}</p>
+                <a href="#">Comment</a>
+                <a href="#">Report</a>
+            </div>
+            <hr />
+          {% endfor %}
+        </article>
+    </body>
+</html>
