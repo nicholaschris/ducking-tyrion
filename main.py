@@ -169,6 +169,7 @@ class AllPost(db.Model):
     email_address = db.StringProperty(required=True)
     phone_number = db.StringProperty(required=True) # Should be number?
     votes = db.IntegerProperty(required=True)
+    comments = db.StringListProperty()
     created = db.DateTimeProperty(auto_now_add = True)
 ### END ###
 
@@ -569,6 +570,26 @@ class Filter(Handler):
         posts = list(q)
         self.render('latest.html', articles=posts, filtered=(t,l))
 
+class Post(Handler):
+    def get(self, post_id):
+        post = AllPost.get_by_id(int(post_id))
+        self.render('post.html', articles = [post])
+
+    def post(self, post_id):
+        # q = AllPost.get_by_id(post_id)
+        post_id = int(self.request.get("id"))
+        comment = self.request.get('comment')
+        q = AllPost.get_by_id(post_id)
+        logging.error(post_id)
+        logging.error(comment)
+        q.comments.append(comment)
+        q.put()
+        time.sleep(0.5)
+        update = recent_posts(update=True)
+        posts = db.GqlQuery("SELECT * FROM AllPost ORDER BY created DESC LIMIT 10")
+        posts = list(posts)
+        self.render('post.html', articles=[q])
+
 ### END HANDLERS ###
 
 
@@ -588,5 +609,6 @@ app = webapp2.WSGIApplication(
      ('/submit/?', AllSubmit),
      ('/thanks/?', Thanks),
      ('/latest/?', Latest),
-     ('/filter/?', Filter)],
+     ('/filter/?', Filter),
+     ('/post/(\d+)/?', Post)],
       debug=True)

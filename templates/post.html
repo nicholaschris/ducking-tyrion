@@ -10,10 +10,25 @@
     <p>{{ item.key().id()|string }} | {{ item.created }}</p>
     <pre><small> <a href="/blog">Home</a> </small></pre>
 </div>
-{% endfor %}
+
 <p>{{ age }}</p>
 
+<div>Comments:</div>
+    {% for c in item.comments%}
+        <div class="comments">
+            {{c}}
+        </div>
+    {% endfor %}
+<div>New Comments:</div>
+<form action="/post/{{item.key().id()|string}}" method="post">
+    <input name="id" value="{{item.key().id()}}" style="display:none">
+    <textarea name="comment"> </textarea>
+    <button type="submit">Submit</button>
+</form>
+{% endfor %}
+<a href="/latest">latest</a>
 {% endblock %}
+
 <!-- <!DOCTYPE html>
 
 <html>
