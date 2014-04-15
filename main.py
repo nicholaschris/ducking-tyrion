@@ -229,7 +229,7 @@ class Home(Handler):
         cookie = self.request.cookies.get('user_id')
         print "Home", cookie
         if cookie:
-            self.write("Welcome, " +cookie+"!")
+            self.write("Welcome, " +cookie+"! <a href='/blog'>Continue</a>")
         else:
             self.render('front.html')
 

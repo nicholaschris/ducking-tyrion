@@ -19,7 +19,7 @@
                 <div class="article-votes">
                     <form action="/latest" method="post">
                         <input name="id" value={{item.key().id()}} style="display:none">
-                        Votes: {{item.votes}} <button type="button" class="btn btn-primary">Vote+</button>
+                        Votes: <span style="background-color:#008cba;color:#fcfcfc;width:40px;height:40px;line-height:2em;">{{item.votes}}</span> <button type="submit" class="btn btn-primary">Vote+</button>
                     </form>
                 </div>
                 <!-- <div class="article-ip">{{item.ip_address}}</div> -->
