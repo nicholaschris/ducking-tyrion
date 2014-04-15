@@ -1,19 +1,7 @@
-<!DOCTYPE html>
-<html>
-    <head>
-        <link rel="stylesheet" type="text/css" href="static/main.css">
-        <style type="text/css">
-            article {
-                width:900px;
-                margin: 0 auto;
-            }
-            h1 {
-                font-size: 2em;
-                font-family: "Serif"
-            }
-        </style>
-    </head>
-    <body>
+{% extends "base.html" %}
+{% block title %} | News and Opinions {% endblock %}
+{% block content %}
+
         <article>
           <h1>Latest adverts and posts posted to this page</h1>
           <hr />
@@ -23,27 +11,30 @@
           {% for item in articles %}
             
             <div class="article">
-                <div class="article-name"><h2>Name: {{item.name}}</h2></div>
+                <div class="article-name"><h3>Name: {{item.name}}</h3></div>
                 <div class="article-title"><h2>Title: {{ item.title }}</h2></div>
-                <div class="article-content">Content: {{ item.content }}</div>
+                Content: <div class="article-content">{{ item.content }}</div>
                 <div class="article-location">Location: {{ item.location}}</div>
                 <div class="article-phonenumber">Contact Number: {{item.phone_number}}</div>
-                <div class="article-votes">Votes: {{item.votes}}
+                <div class="article-votes">
                     <form action="/latest" method="post">
                         <input name="id" value={{item.key().id()}} style="display:none">
-                        <button>Vote+</button>
+                        Votes: {{item.votes}} <button type="button" class="btn btn-primary">Vote+</button>
                     </form>
                 </div>
                 <!-- <div class="article-ip">{{item.ip_address}}</div> -->
                 <!-- <div class="article-created">{{item.created}}</div> -->
                 <!-- {{ item.id }} -->
-                <small><a href="/post/{{ item.key().id() }}">Permalink</a></small>
-                <p>{{ item.key().id()|string }} | {{ item.created }}</p>
-                <a href="#">Comment</a>
-                <a href="#">Report</a>
+                <p>
+                    <small>
+                        <a href="/post/{{ item.key().id() }}">Permalink </a>{{ item.key().id()|string }} | {{ item.created }}
+                    </small>
+                </p>
+                <a href="/post/{{ item.key().id() }}">Comment</a>
+                <a href="/report">Report</a>
             </div>
             <hr />
           {% endfor %}
         </article>
-    </body>
-</html>
+
+{% endblock %}

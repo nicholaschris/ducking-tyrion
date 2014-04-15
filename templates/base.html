@@ -1,30 +1,103 @@
 <!DOCTYPE html>
 <html>
 <head>
+  <meta description="A testing ground for GAE based CMS">
   <link type="text/css" rel="stylesheet" href="/static/main.css" />
+  <link type="text/css" rel="stylesheet" href="/static/bootstrap.css" />
 
   <title>Abacus Finch {% block title %}{% endblock %}</title>
 </head>
 
 <body>
-  <a href="/blog" class="main-title">
-    Abacus Finch
-  </a>
 
-  <div class="login-area">
-    {% if cookie %} <!-- if user -->
-      {{ cookie }} (<a class="login-link" href="blog/logout">logout</a>)
-      <!-- {{user.name}} (<a class="login-link" href="/logout">logout</a>) -->
-    {% else %}
-      <a class="login-link" href="/blog/login">login</a>
-      |
-      <a class="login-link" href="/blog/signup">signup</a>
-    {% endif %}
-  </div>
+<!-- Navbar
+      ================================================== -->
+      <!-- <div class="bs-docs-section clearfix"> -->
+        <!-- <div class="row"> -->
+          <!-- <div class="col-lg-12"> -->
+            <!-- <div class="page-header"> -->
+              <!-- <h1 id="navbar">Navbar</h1> -->
+            <!-- </div> -->
 
-  <div id="content">
-  {% block content %}
-  {% endblock %}
+            <div class="bs-component">
+              <div class="navbar navbar-default">
+                <div class="navbar-header">
+                  <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-responsive-collapse">
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                  </button>
+                  <a class="navbar-brand" href="/">Abacus Finch</a>
+                </div>
+                <div class="navbar-collapse collapse navbar-responsive-collapse">
+                  <ul class="nav navbar-nav">
+                    <li class="active"><a href="#">Home</a></li>
+                    <li><a href="/blog">Blog</a></li>
+                    <li><a href="/latest">Latest</a></li>
+                    <li><a href="/submit">Submit</a></li>
+                    <li class="dropdown" style="display:none">
+                      <a href="#" class="dropdown-toggle" data-toggle="dropdown">Menu <b class="caret"></b></a>
+                      <ul class="dropdown-menu">
+                        <li><a href="/latest">Latest</a></li>
+                        <li><a href="/submit">Submit</a></li>
+                        <li><a href="#">Something else here</a></li>
+                        <li class="divider"></li>
+                        <li class="dropdown-header">Dropdown header</li>
+                        <li><a href="#">Separated link</a></li>
+                        <li><a href="#">One more separated link</a></li>
+                      </ul>
+                    </li>
+                  </ul>
+                  <form class="navbar-form navbar-left">
+                    <input type="text" class="form-control col-lg-8" placeholder="Search">
+                  </form>
+                      <div class="login-area">
+                        {% if cookie %} <!-- if user -->
+                          {{ cookie }} (<a class="login-link" href="blog/logout">logout</a>)
+                          <!-- {{user.name}} (<a class="login-link" href="/logout">logout</a>) -->
+                        {% else %}
+                          <a class="login-link" href="/blog/login">login</a>
+                          |
+                          <a class="login-link" href="/blog/signup">signup</a>
+                        {% endif %}
+                      </div>
+<!--                   <ul class="nav navbar-nav navbar-right">
+                    <li><a href="#">Link</a></li>
+                    <li class="dropdown">
+                      <a href="#" class="dropdown-toggle" data-toggle="dropdown">Dropdown <b class="caret"></b></a>
+                      <ul class="dropdown-menu">
+                        <li><a href="#">Action</a></li>
+                        <li><a href="#">Another action</a></li>
+                        <li><a href="#">Something else here</a></li>
+                        <li class="divider"></li>
+                        <li><a href="#">Separated link</a></li>
+                      </ul>
+                    </li>
+                  </ul> -->
+                </div>
+              </div>
+            </div>
+
+  <div class="container" style="width: 900px;margin 0 auto;">
+    <a href="/blog" class="main-title">
+      Abacus Finch
+    </a>
+
+    <div class="login-area">
+      {% if cookie %} <!-- if user -->
+        {{ cookie }} (<a class="login-link" href="blog/logout">logout</a>)
+        <!-- {{user.name}} (<a class="login-link" href="/logout">logout</a>) -->
+      {% else %}
+        <a class="login-link" href="/blog/login">login</a>
+        |
+        <a class="login-link" href="/blog/signup">signup</a>
+      {% endif %}
+    </div>
+
+    <div id="content">
+    {% block content %}
+    {% endblock %}
+    </div>
   </div>
 </body>
 
