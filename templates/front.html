@@ -1,15 +1,27 @@
-<!DOCTYPE html>
-
-<html>
-    <head>
-        <title>Abacus Finch | Welcome</title>
-        <link rel="stylesheet" type="text/css" href="static/main.css">
-    </head>
-    <body>
+{% extends "base.html" %}
+{% block title %} | News and Opinions {% endblock %}
+{% block content %}
         <h1>Abacus Finch</h1>
-        <h2>The teaching community</h2>
+        <p>This website is currently a testing place for a number of ideas and websites based on a common, generic CMS based on Google App Engine. The <a href="latest">Latest "adverts" or content that has been posted can be seen here</a>. There different ideas are listed below.</p>
+        <h2>Wanteds.co.za</h2>
         <hr>
-        <p>Welcome to Abacus Finch. Abacus Finch aims to bring teachers in South Africa closer together through providing an online community platform. The platform will focus on providing news and opinions on education technology. Additionally, online professional development courses for educators will be available. The online courses will promote the use of technology in the classroom and eventually educators will feel comfertable enough with ed-tech solutions to make use of them in the classroom.</p>
+        <p>
+            Wanteds is a classifieds website specifically for posting wanted ads. The idea is that it makes more sense to look through wanted ads if you have somehting to sell because that way you can connect direclty with a customer.
+        </p>
+        <h2>Refa.co.za</h2>
+        <hr>
+        <p>
+            Refa is a website where peopl that provide services in the home and garden maintanance industries or labourers such as painters, bricklayers, gardeners etc. can advertise their services as well as getting rated (or refa'd) and the work commented on.
+        </p>
+        <h2>Abacus Finch: The teaching community</h2>
+        <hr>
+        <p>
+            Welcome to Abacus Finch. Abacus Finch aims to bring teachers in South Africa closer together through providing an online community platform. The platform will focus on providing news and opinions on education technology. Additionally, online professional development courses for educators will be available. The online courses will promote the use of technology in the classroom and eventually educators will feel comfertable enough with ed-tech solutions to make use of them in the classroom.
+        </p>
+        <h2>WeddingSingers.co.za</h2>
+        <p>
+            Wedding Singers is a place where people involved in providing services for the wedding industry can advertise their services. People that have used them can comment on rate their servicee. 
+        </p>
         <h4>To Do List: </h4>
         <ul>
             <li>Prevent multiple account being created for each e-mail address<input type="checkbox"/></li>
@@ -23,5 +35,4 @@
         </ul>
         <a href="/blog">Blog</a>
         <a href="/blog/signup">Signup</a>
-    </body>
-</html>
+{% endblock %}
