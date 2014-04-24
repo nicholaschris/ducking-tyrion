@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% block script %}
+
+  <script type="text/javascript">
+    $(document).ready(function() {
+      console.log("ready");
+      $('#vote-button').live("click", function() {
+        console.log("BUTTON CLICKED");
+        var num_votes = document.getElementById("votes").innerHTML;
+        num_votes = parseInt(num_votes);
+        console.log(num_votes);
+        num_votes = num_votes + 1;
+        document.getElementById("votes").innerHTML = ''+num_votes;
+        event.preventDefault();
+        $.ajax({
+          type: 'POST',
+          url: '/vote',
+          data: votes,
+          success : function(output) {
+            $('#messages').html("You have succesfully voted!");
+          }
+        });
+      });
+    });
+  </script>
+
+{% endblock %}
+{% block title %} | News and Opinions {% endblock %}
+
+{% block content %}
+
+        <article>
+          <h1>You can vote for names on this page</h1>
+          <hr />
+          {% for item in votes %}
+            
+            <div class="article">
+                <div class="article-name"><h3>Name: {{item.name}}</h3></div>
+                <div class="article-votes">
+                    <form id="voteform">
+                        <input name="id" value={{item.key().id()}} style="display:none">
+                        Votes: 
+                        <div id="votes">{{item.votes}}</div>
+                        <div id="message"></div>
+                        <button id="vote-button" class="btn btn-primary">Vote+</button>
+                    </form>
+                </div>
+                <!-- <div class="article-ip">{{item.ip_address}}</div> -->
+                <!-- <div class="article-created">{{item.created}}</div> -->
+                <!-- {{ item.id }} -->
+                <p>
+                    <small>
+                        <a href="/post/{{ item.key().id() }}">Permalink </a>{{ item.key().id()|string }} | {{ item.created }}
+                    </small>
+                </p>
+                <a href="/post/{{ item.key().id() }}">Comment</a>
+                <a href="/report">Report</a>
+            </div>
+            <hr />
+          {% endfor %}
+        </article>
+
+{% endblock %}

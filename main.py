@@ -580,15 +580,50 @@ class Post(Handler):
         post_id = int(self.request.get("id"))
         comment = self.request.get('comment')
         q = AllPost.get_by_id(post_id)
-        logging.error(post_id)
-        logging.error(comment)
+        # logging.error(post_id)
+        # logging.error(comment)
         q.comments.append(comment)
         q.put()
         time.sleep(0.5)
         update = recent_posts(update=True)
         posts = db.GqlQuery("SELECT * FROM AllPost ORDER BY created DESC LIMIT 10")
         posts = list(posts)
-        self.render('post.html', articles=[q])
+        self.redirect('post.html', articles=[q])
+
+
+class VoteUser(db.Model):
+    """Models an individual user."""
+    name = db.StringProperty(required=True)
+    votes = db.IntegerProperty()
+
+class VoteMaker(Handler):
+    def get(self):
+        self.render('vote-form.html')
+
+    def post(self):
+        name = self.request.get("name")
+        vote = 0
+        new_vote_user = VoteUser(name=name, votes=vote)
+        new_vote_user.put()
+        self.redirect('/thanks')
+
+class Vote(Handler):
+    def get(self):
+        q = db.GqlQuery("SELECT * FROM VoteUser ORDER BY name DESC LIMIT 10")
+        logging.error(q)
+        votes = list(q)
+        logging.error(votes)
+        self.render('vote.html', votes=votes)
+
+    def post(self):
+        post_id = int(self.request.get("id"))
+        # votes = int(self.request.get("votes"))
+        data = self.request.get("data")
+        q = VoteUser.get_by_id(post_id)
+        logging.error(q)
+        q.votes += 1
+        q.put()
+        self.redirect('/vote')
 
 ### END HANDLERS ###
 
@@ -610,5 +645,7 @@ app = webapp2.WSGIApplication(
      ('/thanks/?', Thanks),
      ('/latest/?', Latest),
      ('/filter/?', Filter),
-     ('/post/(\d+)/?', Post)],
+     ('/post/(\d+)/?', Post),
+     ('/votemake/?', VoteMaker),
+     ('/vote/?', Vote)],
       debug=True)

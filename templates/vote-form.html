@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block title %} | {{ Submit }} {% endblock %}
+{% block content %}
+
+<h1>/Submit/</h1>
+<form method="post">
+    <label>
+        <div>Name</div> 
+        <input type="text" name="name" value={{name}} >
+    </label>
+    <div class="error">{{error}}</div>
+    <input type="submit">
+</form>
+{% endblock %}
