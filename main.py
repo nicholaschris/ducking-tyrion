@@ -551,8 +551,8 @@ class Latest(Handler):
         update = recent_posts(update=True)
         posts = db.GqlQuery("SELECT * FROM AllPost ORDER BY created DESC LIMIT 10")
         posts = list(posts)
-        self.render('latest.html', articles=posts)
-        # self.redirect('/latest')
+        # self.render('latest.html', articles=posts)
+        self.redirect('/latest')
 
 class Filter(Handler):
 

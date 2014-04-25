@@ -36,7 +36,7 @@
             
             <div class="article">
                 <div class="article-name"><h3>Name: {{item.name}}</h3></div>
-                <div class="article-votes">
+                <div id={{item.key().id}} class="article-votes">
                     <form id="voteform">
                         <input name="id" value={{item.key().id()}} style="display:none">
                         Votes: 
